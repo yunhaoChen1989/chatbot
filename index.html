@@ -252,6 +252,10 @@ window.addEventListener('unhandledrejection', function(event) {
                     loadingDiv.innerHTML = '⚠️ Error contacting bot';
                     loadingDiv.classList.remove('loading');
                 }
+        }catch(e){
+            onsole.error('Fetch error:', e);
+            alert('error: ' + e);
+        }
         }
         loadHistory();
         sendBtn.addEventListener("click", sendMessage);
