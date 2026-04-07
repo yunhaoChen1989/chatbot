@@ -162,6 +162,7 @@ window.addEventListener('unhandledrejection', function(event) {
             window.history.replaceState({}, '', newUrl);
         }
         const API_BASE = "https://66.154.112.25";
+        console.log('API_BASE set to', API_BASE);
         // UI elements
         const chatEl = document.getElementById('chat');
         const inputEl = document.getElementById('msgInput');
@@ -208,12 +209,15 @@ window.addEventListener('unhandledrejection', function(event) {
                 const resp = await fetch(`${API_BASE}/chatbot/api/history/${sessionId}?limit=25`, {mode: 'cors'});
                 if (!resp.ok) throw new Error('Failed to fetch history');
                 const data = await resp.json();
+                // Show the raw API response for debugging
+                alert('History API response:\n' + JSON.stringify(data, null, 2));
                 data.forEach(item => {
                     const role = item.role === 'human' ? 'human' : 'ai';
                     addMessage(role, item.content);
                 });
             } catch (e) {
                 console.error(e);
+                alert('Error loading history: ' + e.message);
             }
         }
         
@@ -229,17 +233,25 @@ window.addEventListener('unhandledrejection', function(event) {
             chatEl.appendChild(loadingDiv);
             chatEl.scrollTop = chatEl.scrollHeight;
             try {
-                const resp = await fetch(`${API_BASE}/chatbot/api/chat`, fetchOptions('POST', {user_id: sessionId, text}));
-                if (!resp.ok) throw new Error('Chat failed');
-                const data = await resp.json();
-                // Insert the actual reply
-                loadingDiv.innerHTML = linkify(data.reply);
-                loadingDiv.classList.remove('loading');
-            } catch (e) {
-                console.error(e);
-                loadingDiv.innerHTML = '⚠️ Error contacting bot';
-                loadingDiv.classList.remove('loading');
-            }
+                try {
+                    const resp = await fetch(`${API_BASE}/chatbot/api/chat`, fetchOptions('POST', {user_id: sessionId, text}));
+                    if (!resp.ok) {
+                        const errText = await resp.text();
+                        throw new Error(`Chat failed: ${resp.status} ${resp.statusText} - ${errText}`);
+                    }
+                    const data = await resp.json();
+                    // Show the raw API response for debugging
+                    alert('Chat API response:\n' + JSON.stringify(data, null, 2));
+                    // Insert the actual reply
+                    loadingDiv.innerHTML = linkify(data.reply);
+                    loadingDiv.classList.remove('loading');
+                } catch (e) {
+                    console.error('Fetch error:', e);
+                    const debugEl = document.getElementById('debug');
+                    if (debugEl) debugEl.textContent += `Fetch error: ${e.message}\n`;
+                    loadingDiv.innerHTML = '⚠️ Error contacting bot';
+                    loadingDiv.classList.remove('loading');
+                }
         }
         loadHistory();
         sendBtn.addEventListener("click", sendMessage);
