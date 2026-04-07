@@ -240,6 +240,7 @@ window.addEventListener('unhandledrejection', function(event) {
                         throw new Error(`Chat failed: ${resp.status} ${resp.statusText} - ${errText}`);
                     }
                     const data = await resp.json();
+                    console.log(data);
                     // Show the raw API response for debugging
                     alert('Chat API response:\n' + JSON.stringify(data, null, 2));
                     // Insert the actual reply
