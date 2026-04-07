@@ -132,6 +132,19 @@
     </div>
     <script>
         // ---------- Helpers ----------
+// Global error catcher for debugging on iOS/mac
+window.addEventListener('error', function(event) {
+    const msg = `⚠️ JS Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
+    console.error(msg);
+    const debugEl = document.getElementById('debug');
+    if (debugEl) debugEl.textContent += msg + '\n';
+});
+window.addEventListener('unhandledrejection', function(event) {
+    const msg = `⚠️ Unhandled Promise Rejection: ${event.reason}`;
+    console.error(msg);
+    const debugEl = document.getElementById('debug');
+    if (debugEl) debugEl.textContent += msg + '\n';
+});
         function randomString(len = 12) {
             const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let out = '';
@@ -148,7 +161,7 @@
             const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
             window.history.replaceState({}, '', newUrl);
         }
-        const API_BASE = "https://66.154.112.25";
+        const API_BASE = location.origin;
         // UI elements
         const chatEl = document.getElementById('chat');
         const inputEl = document.getElementById('msgInput');
@@ -239,5 +252,6 @@
         });
 
     </script>
+<pre id="debug" style="white-space:pre-wrap;color:red;padding:0.5rem;background:#fee;"></pre>
 </body>
 </html>
