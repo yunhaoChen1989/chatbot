@@ -162,14 +162,17 @@
             const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
             const normalizeDashes = str => str.replace(/[\u2010-\u2015]/g, '-');
             return text.replace(urlRegex, function (url) {
-                const cleanUrl = normalizeDashes(url);
+                // Separate any trailing punctuation that shouldn't be part of the URL
+                const trailingMatch = url.match(/[)\]\.,;:!?]+$/);
+                const trail = trailingMatch ? trailingMatch[0] : '';
+                const stripped = url.slice(0, url.length - trail.length);
+                const cleanUrl = normalizeDashes(stripped);
                 const isImage = /\.(png|jpe?g|gif|webp)(?:[?#]|$)/i.test(cleanUrl);
                 const href = cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`;
-                if (isImage) {
-                    return `<br/><img src="${href}" alt="movie poster" style="max-width:200px;max-height:300px;"/><br/>`;
-                } else {
-                    return `<a href="${href}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>`;
-                }
+                const result = isImage
+                    ? `<br/><img src="${href}" alt="movie poster" style="max-width:200px;max-height:300px;"/><br/>`
+                    : `<a href="${href}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>`;
+                return result + trail;
             });
         }
         // Render a message bubble (human or AI)
